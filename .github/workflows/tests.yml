@@ -1,0 +1,28 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install indicator import dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends python3-gi gir1.2-gtk-3.0 gir1.2-gdkpixbuf-2.0 gir1.2-ayatanaappindicator3-0.1
+      - name: Check shell and Python syntax
+        run: |
+          bash -n install.sh
+          /usr/bin/python3 -m py_compile mouse_battery.py mouse_tray.py
+      - name: Run hardware-independent tests
+        run: /usr/bin/python3 -m unittest discover -s tests -v
